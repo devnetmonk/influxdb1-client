@@ -1,5 +1,5 @@
 // Package client (v2) is the current official Go client for InfluxDB.
-package client // import "github.com/influxdata/influxdb1-client/v2"
+package client // import "github.com/devnetmonk/influxdb1-client/v2"
 
 import (
 	"bytes"
@@ -18,7 +18,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/influxdata/influxdb1-client/models"
+	"github.com/devnetmonk/influxdb1-client/models"
 )
 
 type ContentEncoding string
@@ -59,6 +59,8 @@ type HTTPConfig struct {
 
 	// WriteEncoding specifies the encoding of write request
 	WriteEncoding ContentEncoding
+
+	XOrgID string
 }
 
 // BatchPointsConfig is the config data needed to create an instance of the BatchPoints struct.
@@ -135,6 +137,7 @@ func NewHTTPClient(conf HTTPConfig) (Client, error) {
 		username:  conf.Username,
 		password:  conf.Password,
 		useragent: conf.UserAgent,
+		xorgid:    conf.XOrgID,
 		httpClient: &http.Client{
 			Timeout:   conf.Timeout,
 			Transport: tr,
@@ -204,6 +207,7 @@ type client struct {
 	username   string
 	password   string
 	useragent  string
+	xorgid     string
 	httpClient *http.Client
 	transport  *http.Transport
 	encoding   ContentEncoding
@@ -230,11 +234,6 @@ type BatchPoints interface {
 	// SetDatabase sets the database of this Batch.
 	SetDatabase(s string)
 
-	// Database returns the currently set database of this Batch.
-	XOrgID() string
-	// SetDatabase sets the database of this Batch.
-	SetXOrgId(s string)
-
 	// WriteConsistency returns the currently set write consistency of this Batch.
 	WriteConsistency() string
 	// SetWriteConsistency sets the write consistency of this Batch.
@@ -259,7 +258,6 @@ func NewBatchPoints(conf BatchPointsConfig) (BatchPoints, error) {
 		precision:        conf.Precision,
 		retentionPolicy:  conf.RetentionPolicy,
 		writeConsistency: conf.WriteConsistency,
-		xorgid:           conf.XOrgID,
 	}
 	return bp, nil
 }
@@ -270,7 +268,6 @@ type batchpoints struct {
 	precision        string
 	retentionPolicy  string
 	writeConsistency string
-	xorgid           string
 }
 
 func (bp *batchpoints) AddPoint(p *Point) {
@@ -293,10 +290,6 @@ func (bp *batchpoints) Database() string {
 	return bp.database
 }
 
-func (bp *batchpoints) XOrgID() string {
-	return bp.xorgid
-}
-
 func (bp *batchpoints) WriteConsistency() string {
 	return bp.writeConsistency
 }
@@ -315,10 +308,6 @@ func (bp *batchpoints) SetPrecision(p string) error {
 
 func (bp *batchpoints) SetDatabase(db string) {
 	bp.database = db
-}
-
-func (bp *batchpoints) SetXOrgId(xOrgID string) {
-	bp.xorgid = xOrgID
 }
 
 func (bp *batchpoints) SetWriteConsistency(wc string) {
@@ -441,7 +430,7 @@ func (c *client) Write(bp BatchPoints) error {
 	}
 	req.Header.Set("Content-Type", "")
 	req.Header.Set("User-Agent", c.useragent)
-	req.Header.Set("X-Scope-OrgID", bp.XOrgID())
+	req.Header.Set("X-Scope-OrgID", c.xorgid)
 	if c.username != "" {
 		req.SetBasicAuth(c.username, c.password)
 	}
@@ -575,7 +564,7 @@ func (c *client) Query(q Query) (*Response, error) {
 		return nil, err
 	}
 	defer func() {
-		io.Copy(ioutil.Discard, resp.Body) // https://github.com/influxdata/influxdb1-client/issues/58
+		io.Copy(ioutil.Discard, resp.Body) // https://github.com/devnetmonk/influxdb1-client/issues/58
 		resp.Body.Close()
 	}()
 

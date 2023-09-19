@@ -1,20 +1,20 @@
 # influxdb1-clientv2
-influxdb1-clientv2 is the current Go client API for InfluxDB 1.x. For connecting to InfluxDB 2.x see the [influxdb-client-go](https://github.com/influxdata/influxdb-client-go) client library.
+influxdb1-clientv2 is the current Go client API for InfluxDB 1.x. For connecting to InfluxDB 2.x see the [influxdb-client-go](https://github.com/devnetmonk/influxdb-client-go) client library.
 
 InfluxDB is an open-source distributed time series database, find more about [InfluxDB](https://www.influxdata.com/time-series-platform/influxdb/) at https://docs.influxdata.com/influxdb/latest
 
 ## Usage
 To import into your Go project, run the following command in your terminal:
-`go get github.com/influxdata/influxdb1-client/v2`
+`go get github.com/devnetmonk/influxdb1-client/v2`
 Then, in your import declaration section of your Go file, paste the following:
-`import "github.com/influxdata/influxdb1-client/v2"`
+`import "github.com/devnetmonk/influxdb1-client/v2"`
 
-If you get the error `build github.com/user/influx: cannot find module for path github.com/influxdata/influxdb1-client/v2` when trying to build:
+If you get the error `build github.com/user/influx: cannot find module for path github.com/devnetmonk/influxdb1-client/v2` when trying to build:
 change your import to:
 ```go
 import(
-	_ "github.com/influxdata/influxdb1-client" // this is important because of the bug in go mod
-	client "github.com/influxdata/influxdb1-client/v2"
+	_ "github.com/devnetmonk/influxdb1-client" // this is important because of the bug in go mod
+	client "github.com/devnetmonk/influxdb1-client/v2"
 )
 ```
 
