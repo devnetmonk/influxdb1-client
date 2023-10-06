@@ -1,5 +1,5 @@
 // Package client (v2) is the current official Go client for InfluxDB.
-package client // import "github.com/influxdata/influxdb1-client/v2"
+package client // import "github.com/devnetmonk/influxdb1-client/v2"
 
 import (
 	"bytes"
@@ -18,7 +18,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/influxdata/influxdb1-client/models"
+	"github.com/devnetmonk/influxdb1-client/models"
 )
 
 type ContentEncoding string
@@ -59,6 +59,8 @@ type HTTPConfig struct {
 
 	// WriteEncoding specifies the encoding of write request
 	WriteEncoding ContentEncoding
+
+	XOrgID string
 }
 
 // BatchPointsConfig is the config data needed to create an instance of the BatchPoints struct.
@@ -74,6 +76,8 @@ type BatchPointsConfig struct {
 
 	// Write consistency is the number of servers required to confirm write.
 	WriteConsistency string
+
+	XOrgID string
 }
 
 // Client is a client interface for writing & querying the database.
@@ -133,6 +137,7 @@ func NewHTTPClient(conf HTTPConfig) (Client, error) {
 		username:  conf.Username,
 		password:  conf.Password,
 		useragent: conf.UserAgent,
+		xorgid:    conf.XOrgID,
 		httpClient: &http.Client{
 			Timeout:   conf.Timeout,
 			Transport: tr,
@@ -202,6 +207,7 @@ type client struct {
 	username   string
 	password   string
 	useragent  string
+	xorgid     string
 	httpClient *http.Client
 	transport  *http.Transport
 	encoding   ContentEncoding
@@ -424,6 +430,7 @@ func (c *client) Write(bp BatchPoints) error {
 	}
 	req.Header.Set("Content-Type", "")
 	req.Header.Set("User-Agent", c.useragent)
+	req.Header.Set("X-Scope-OrgID", c.xorgid)
 	if c.username != "" {
 		req.SetBasicAuth(c.username, c.password)
 	}
@@ -557,7 +564,7 @@ func (c *client) Query(q Query) (*Response, error) {
 		return nil, err
 	}
 	defer func() {
-		io.Copy(ioutil.Discard, resp.Body) // https://github.com/influxdata/influxdb1-client/issues/58
+		io.Copy(ioutil.Discard, resp.Body) // https://github.com/devnetmonk/influxdb1-client/issues/58
 		resp.Body.Close()
 	}()
 
